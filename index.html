@@ -86,68 +86,65 @@
     
         <script>
             const periods = [
-                {
-                    name: 'Medieval',
-                    searchTerms: 'Medieval paintings European 1000-1400'
-                },
-                {
-                    name: 'Renaissance',
-                    searchTerms: 'Renaissance paintings European 1400-1600'
-                },
-                {
-                    name: 'Baroque',
-                    searchTerms: 'Baroque paintings European 1600-1750'
-                }
-            ];                                                                                                                        //i changed the order to reflect the timeline BPF.
-    
-            async function getArtworkByPeriod(period, position) {
-                try {
+    {
+        name: 'Medieval',
+        searchTerms: 'Medieval paintings European 1000-1400'
+    },
+    {
+        name: 'Renaissance',
+        searchTerms: 'Renaissance paintings European 1400-1600'
+    },
+    {
+        name: 'Baroque',
+        searchTerms: 'Baroque paintings European 1600-1750'
+    }
+];
 
-                    const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=${period.searchTerms}`;
-                    const response = await fetch(searchUrl);
-                    const data = await response.json();
-    
-                    if (!data.objectIDs || data.objectIDs.length === 0) {
-                        console.log('No artworks found for', period.name);
-                        return;
-                    }
-    
-                    const randomIndex = Math.floor(Math.random() * data.objectIDs.length);
-                    const randomId = data.objectIDs[randomIndex];
-    
-                    const objectUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${randomId}`;
-                    const objectResponse = await fetch(objectUrl);
-                    const artwork = await objectResponse.json();
-    
-                    if (artwork.primaryImage) {
-                        document.getElementById(`artworkImage${position}`).src = artwork.primaryImage;
-                        document.getElementById(`artworkTitle${position}`).textContent = artwork.title || 'Untitled';
-                        document.getElementById(`artworkPeriod${position}`).textContent = period.name;
-                        document.getElementById(`artworkArtist${position}`).textContent = artwork.artistDisplayName || 'Unknown Artist';
-                        document.getElementById(`artworkDate${position}`).textContent = artwork.objectEndDate || 'Date unknown';                //double check the artworkdate field it needs to pull from BeginDate or EndDate.
-                    }
-                } catch (error) {
-                    console.error('Error loading artwork:', error);
-                }
-            }
-    
-            async function loadNewArtworks() {
-   
-                for (let i = 1; i <= 3; i++) {
-                    document.getElementById(`artworkImage${i}`).src = '#';
-                    document.getElementById(`artworkTitle${i}`).textContent = 'Loading...'; //is this why it just says loading at certain times? what is this accounting for? BPF
-                    document.getElementById(`artworkPeriod${i}`).textContent = '';
-                    document.getElementById(`artworkArtist${i}`).textContent = '';
-                    document.getElementById(`artworkDate${i}`).textContent = '';
-                }
-    
+async function getArtworkByPeriod(period, position) {
+    try {
+        const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1.1/search?hasImages=true&q=${encodeURIComponent(period.searchTerms)}&limit=100&offset=0`; // Updated to v1.1 with pagination parameters
+        const response = await fetch(searchUrl);
+        const data = await response.json();
 
-                for (let i = 0; i < periods.length; i++) {
-                    await getArtworkByPeriod(periods[i], i + 1);
-                }
-            }
-    
-            window.onload = loadNewArtworks;
+        if (!data.objectIDs || data.objectIDs.length === 0) {
+            console.log('No artworks found for', period.name);
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * data.objectIDs.length);
+        const randomId = data.objectIDs[randomIndex];
+
+        const objectUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${randomId}`;
+        const objectResponse = await fetch(objectUrl);
+        const artwork = await objectResponse.json();
+
+        if (artwork.primaryImage) {
+            document.getElementById(`artworkImage${position}`).src = artwork.primaryImage;
+            document.getElementById(`artworkTitle${position}`).textContent = artwork.title || 'Untitled';
+            document.getElementById(`artworkPeriod${position}`).textContent = period.name;
+            document.getElementById(`artworkArtist${position}`).textContent = artwork.artistDisplayName || 'Unknown Artist';
+            document.getElementById(`artworkDate${position}`).textContent = artwork.objectEndDate || 'Date unknown';
+        }
+    } catch (error) {
+        console.error('Error loading artwork:', error);
+    }
+}
+
+async function loadNewArtworks() {
+    for (let i = 1; i <= 3; i++) {
+        document.getElementById(`artworkImage${i}`).src = '#';
+        document.getElementById(`artworkTitle${i}`).textContent = 'Loading...';
+        document.getElementById(`artworkPeriod${i}`).textContent = '';
+        document.getElementById(`artworkArtist${i}`).textContent = '';
+        document.getElementById(`artworkDate${i}`).textContent = '';
+    }
+
+    for (let i = 0; i < periods.length; i++) {
+        await getArtworkByPeriod(periods[i], i + 1);
+    }
+}
+
+window.onload = loadNewArtworks;
         </script>
     </body>
 </html>
