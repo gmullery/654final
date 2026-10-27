@@ -111,20 +111,33 @@ async function getArtworkByPeriod(period, position) {
             return;
         }
 
-        const randomIndex = Math.floor(Math.random() * data.objectIDs.length);
-        const randomId = data.objectIDs[randomIndex];
+        // Track attempted IDs so each random choice is new, and stop after 10 attempts.
+        const triedObjectIDs = new Set();
+        const maxAttempts = Math.min(10, data.objectIDs.length);
 
-        const objectUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${randomId}`;
-        const objectResponse = await fetch(objectUrl);
-        const artwork = await objectResponse.json();
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            const untriedObjectIDs = data.objectIDs.filter(id => !triedObjectIDs.has(id));
+            if (untriedObjectIDs.length === 0) break;
 
-        if (artwork.primaryImage) {
-            document.getElementById(`artworkImage${position}`).src = artwork.primaryImage;
-            document.getElementById(`artworkTitle${position}`).textContent = artwork.title || 'Untitled';
-            document.getElementById(`artworkPeriod${position}`).textContent = period.name;
-            document.getElementById(`artworkArtist${position}`).textContent = artwork.artistDisplayName || 'Unknown Artist';
-            document.getElementById(`artworkDate${position}`).textContent = artwork.objectEndDate || 'Date unknown';
+            const randomIndex = Math.floor(Math.random() * untriedObjectIDs.length);
+            const randomId = untriedObjectIDs[randomIndex];
+            triedObjectIDs.add(randomId);
+
+            const objectUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${randomId}`;
+            const objectResponse = await fetch(objectUrl);
+            const artwork = await objectResponse.json();
+
+            if (artwork.primaryImage) {
+                document.getElementById(`artworkImage${position}`).src = artwork.primaryImage;
+                document.getElementById(`artworkTitle${position}`).textContent = artwork.title || 'Untitled';
+                document.getElementById(`artworkPeriod${position}`).textContent = period.name;
+                document.getElementById(`artworkArtist${position}`).textContent = artwork.artistDisplayName || 'Unknown Artist';
+                document.getElementById(`artworkDate${position}`).textContent = artwork.objectEndDate || 'Date unknown';
+                return;
+            }
         }
+
+        console.log('No artwork with an image found after', maxAttempts, 'attempts for', period.name);
     } catch (error) {
         console.error('Error loading artwork:', error);
     }
