@@ -17,20 +17,22 @@
     <!-- Script to randomly get an Object ID by a filtered scope -->
     <!-- Getting data from the search's API -->
     <script> 
-      async function getObjectsList(departmentId, position) {
-        let url = `https://collectionapi.metmuseum.org/public/collection/v1/search?departmentId=${departmentId}&isHighlight=true&hasImages=true&isPublicDomain=true&q=a`;
+     async function getObjectsList(departmentId, position) {
+  // Updated to the paginated v1.1 search endpoint with limit and offset.
+  let url = `https://collectionapi.metmuseum.org/public/collection/v1.1/search?departmentId=${departmentId}&isHighlight=true&hasImages=true&isPublicDomain=true&q=a&limit=100&offset=0`;
 
-        const response = await fetch(url);
-        const jsonData = await response.json();
+  const response = await fetch(url);
+  const jsonData = await response.json();
 
-        const totalCount = jsonData.total;
-        let randomElement = Math.floor(Math.random()*totalCount);
-        let elementId = jsonData.objectIDs[randomElement];
+  const totalCount = jsonData.total;
+  let randomElement = Math.floor(Math.random()*jsonData.objectIDs.length);
+  let elementId = jsonData.objectIDs[randomElement];
 
-        document.getElementById("totalCount").innerText = totalCount;
-        document.getElementById("elementId").innerText = elementId;
+  document.getElementById("totalCount").innerText = totalCount;
+  document.getElementById("elementId").innerText = elementId;
 
-        getObjectData(elementId, position);
+  getObjectData(elementId, position);
+}
       }
     </script>
     
