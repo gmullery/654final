@@ -17,7 +17,7 @@
     <!-- Script to randomly get an Object ID by a filtered scope -->
     <!-- Getting data from the search's API -->
     <script> 
-     async function getObjectsList(departmentId, position) {
+    async function getObjectsList(departmentId, position) {
   const baseUrl = `https://collectionapi.metmuseum.org/public/collection/v1.1/search?departmentId=${departmentId}&isHighlight=true&hasImages=true&isPublicDomain=true&q=a`;
 
   // First fetch: get the total number of matching artworks.
@@ -45,9 +45,7 @@
 
   document.getElementById("elementId").innerText = elementId;
   getObjectData(elementId, position);
-
-
-      }
+}
     </script>
     
     
