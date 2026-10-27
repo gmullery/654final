@@ -18,20 +18,34 @@
     <!-- Getting data from the search's API -->
     <script> 
      async function getObjectsList(departmentId, position) {
-  // Updated to the paginated v1.1 search endpoint with limit and offset.
-  let url = `https://collectionapi.metmuseum.org/public/collection/v1.1/search?departmentId=${departmentId}&isHighlight=true&hasImages=true&isPublicDomain=true&q=a&limit=100&offset=0`;
+  const baseUrl = `https://collectionapi.metmuseum.org/public/collection/v1.1/search?departmentId=${departmentId}&isHighlight=true&hasImages=true&isPublicDomain=true&q=a`;
 
-  const response = await fetch(url);
-  const jsonData = await response.json();
-
-  const totalCount = jsonData.total;
-  let randomElement = Math.floor(Math.random()*jsonData.objectIDs.length);
-  let elementId = jsonData.objectIDs[randomElement];
+  // First fetch: get the total number of matching artworks.
+  const countResponse = await fetch(`${baseUrl}&limit=1&offset=0`);
+  const countData = await countResponse.json();
+  const totalCount = countData.total ?? 0;
 
   document.getElementById("totalCount").innerText = totalCount;
-  document.getElementById("elementId").innerText = elementId;
 
+  if (totalCount < 1) {
+    document.getElementById("elementId").innerText = "No artwork found";
+    return;
+  }
+
+  // Second fetch: choose a random result offset and request just that artwork ID.
+  const randomOffset = Math.floor(Math.random() * totalCount);
+  const resultResponse = await fetch(`${baseUrl}&limit=1&offset=${randomOffset}`);
+  const jsonData = await resultResponse.json();
+  const elementId = jsonData.objectIDs?.[0];
+
+  if (elementId == null) {
+    document.getElementById("elementId").innerText = "No artwork found";
+    return;
+  }
+
+  document.getElementById("elementId").innerText = elementId;
   getObjectData(elementId, position);
+}
 }
       }
     </script>
