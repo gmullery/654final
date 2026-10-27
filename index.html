@@ -113,7 +113,7 @@ async function getArtworkByPeriod(period, position) {
 
         // Track attempted IDs so each random choice is new, and stop after 10 attempts.
         const triedObjectIDs = new Set();
-        const maxAttempts = Math.min(10, data.objectIDs.length);
+        const maxAttempts = Math.min(30, data.objectIDs.length);
 
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             const untriedObjectIDs = data.objectIDs.filter(id => !triedObjectIDs.has(id));
